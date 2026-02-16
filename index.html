@@ -3,237 +3,397 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Riccardo's Debugger</title>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <title>Run Riccardo Run!</title>
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #1e1e1e; /* VS Code Dark Grey */
-            color: #00ff41; /* Terminal Green */
-            font-family: 'Courier New', Courier, monospace;
-            overflow: hidden; /* Vietato scrollare durante il gioco */
-            touch-action: none;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            height: 100vh;
+        /* STILE GRAFICO */
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            font-family: 'Courier New', sans-serif; 
+            background: #1a1a1a; 
+            color: white; 
+            touch-action: none; /* Disabilita zoom su mobile */
         }
-
-        /* SCHERMATA GIOCO */
-        #game-screen {
-            width: 100%;
-            height: 100%;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+        #game-container { 
+            position: relative; 
+            width: 100vw; 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
         }
-
-        h1 { font-size: 1.5rem; text-align: center; margin-top: 20px; z-index: 10; pointer-events: none; }
+        canvas { 
+            background: #f4f4f4; 
+            border-radius: 4px; 
+            box-shadow: 0 0 20px rgba(0,0,0,0.5); 
+            max-width: 100%; 
+            display: block;
+        }
         
-        #counter {
-            font-size: 3rem;
-            font-weight: bold;
-            color: #ff0000;
-            z-index: 10;
-            pointer-events: none;
-            text-shadow: 0 0 10px red;
+        /* INTERFACCIA UTENTE (UI) */
+        .ui-layer { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 10; 
+            pointer-events: none; /* Lascia passare i click se nascosto */
         }
-
-        .bug {
-            position: absolute;
-            font-size: 3rem;
-            cursor: pointer;
-            user-select: none;
-            animation: jitter 0.5s infinite;
+        
+        .interactive { 
+            pointer-events: auto; 
+            background: rgba(0,0,0,0.9); 
+            padding: 25px; 
+            border-radius: 12px; 
+            text-align: center; 
+            width: 85%; 
+            max-width: 350px; 
+            border: 2px solid #ff0000; /* Rosso Laurea */
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
+        }
+        
+        h1 { margin: 0 0 10px 0; color: #ff0000; font-size: 26px; text-transform: uppercase; }
+        p { font-size: 14px; color: #ccc; line-height: 1.4; }
+        
+        button { 
+            background: #ff0000; 
+            color: white; 
+            border: none; 
+            padding: 12px 25px; 
+            font-size: 18px; 
+            font-weight: bold; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            margin-top: 15px; 
+            width: 100%;
             transition: transform 0.1s;
         }
-
-        .bug:active { transform: scale(0.8); }
-
-        /* SCHERMATA VITTORIA */
-        #victory-screen {
-            display: none; /* Nascosto all'inizio */
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
-            text-align: center;
-            padding: 20px;
-            box-sizing: border-box;
-            z-index: 100;
-        }
-
-        .card {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 30px;
-            border-radius: 15px;
-            border: 1px solid #30363d;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            max-width: 400px;
-        }
-
-        .btn-download {
-            display: inline-block;
-            background-color: #238636;
+        button:active { transform: scale(0.95); }
+        
+        input { 
+            padding: 12px; 
+            font-size: 16px; 
+            width: 90%; 
+            text-align: center; 
+            margin-top: 15px; 
+            border-radius: 6px; 
+            border: none; 
+            background: #333;
             color: white;
-            padding: 15px 25px;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: bold;
-            margin-top: 20px;
-            font-family: sans-serif;
-            box-shadow: 0 4px 0 #185a24;
+            text-transform: uppercase;
         }
-        .btn-download:active { transform: translateY(4px); box-shadow: none; }
 
-        @keyframes jitter {
-            0% { transform: rotate(0deg); }
-            25% { transform: rotate(5deg); }
-            50% { transform: rotate(0deg); }
-            75% { transform: rotate(-5deg); }
-            100% { transform: rotate(0deg); }
+        /* CLASSIFICA */
+        #leaderboard { 
+            margin-top: 25px; 
+            text-align: left; 
+            width: 100%; 
+            font-size: 13px; 
+            max-height: 180px; 
+            overflow-y: auto; 
+            background: rgba(255,255,255,0.05);
+            padding: 10px;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        .score-row { 
+            display: flex; 
+            justify-content: space-between; 
+            padding: 6px 0; 
+            border-bottom: 1px solid #444; 
+        }
+        .score-row:nth-child(1) { color: gold; font-weight: bold; font-size: 1.1em; } 
+        .score-row:nth-child(2) { color: silver; } 
+        .score-row:nth-child(3) { color: #cd7f32; } 
+        
+        #score-hud { 
+            position: absolute; 
+            top: 20px; 
+            right: 20px; 
+            font-size: 28px; 
+            font-weight: bold; 
+            color: #333; 
+            z-index: 5; 
+            font-family: Arial, sans-serif;
         }
         
-        @keyframes pop {
-            0% { transform: scale(1); opacity: 1; }
-            100% { transform: scale(2); opacity: 0; }
-        }
+        /* Controlli Mobile (Invisibili ma cliccabili) */
+        #mobile-controls { 
+            position: absolute; 
+            bottom: 0; 
+            width: 100%; 
+            height: 100%; 
+            z-index: 1; 
+        } 
     </style>
+
+    <script type="module">
+        // Importa le funzioni necessarie dai server di Google (CDN)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getDatabase, ref, push, query, orderByChild, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+
+        // --- LA TUA CONFIGURAZIONE ---
+        const firebaseConfig = {
+          apiKey: "AIzaSyD4jcNF-5pnZnaViy900SHbCf5-6XlmDts",
+          authDomain: "laurea-4270d.firebaseapp.com",
+          databaseURL: "https://laurea-4270d-default-rtdb.europe-west1.firebasedatabase.app",
+          projectId: "laurea-4270d",
+          storageBucket: "laurea-4270d.firebasestorage.app",
+          messagingSenderId: "351839726503",
+          appId: "1:351839726503:web:fcc110de03f49822bde482"
+        };
+        // ----------------------------
+
+        // Inizializza Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        
+        // Funzione per salvare il punteggio (globale)
+        window.saveScoreToDb = function(name, score) {
+            const scoresRef = ref(db, 'scores');
+            push(scoresRef, { 
+                name: name, 
+                score: score,
+                timestamp: Date.now()
+            }).then(() => {
+                // Ricarica la pagina dopo il salvataggio per aggiornare la classifica
+                setTimeout(() => location.reload(), 1000);
+            }).catch((error) => {
+                alert("Errore salvataggio: " + error.message);
+            });
+        };
+
+        // Funzione per caricare la classifica
+        window.loadLeaderboard = function() {
+            const scoresRef = query(ref(db, 'scores'), orderByChild('score'), limitToLast(20)); // Prende i top 20
+            onValue(scoresRef, (snapshot) => {
+                const list = document.getElementById('leaderboard-list');
+                list.innerHTML = "";
+                let data = [];
+                snapshot.forEach((child) => { data.push(child.val()); });
+                
+                // Ordina dal più alto al più basso (Firebase ordina ascendente di default)
+                data.sort((a, b) => b.score - a.score);
+                
+                if (data.length === 0) {
+                    list.innerHTML = "<div style='text-align:center; padding:10px;'>Nessun punteggio ancora!</div>";
+                }
+
+                data.forEach((entry, index) => {
+                    const row = document.createElement('div');
+                    row.className = 'score-row';
+                    // Taglia il nome se troppo lungo
+                    let safeName = entry.name ? entry.name.substring(0, 12) : "Anonimo";
+                    row.innerHTML = `<span>${index + 1}. ${safeName}</span><span>${entry.score}</span>`;
+                    list.appendChild(row);
+                });
+            });
+        };
+        
+        // Carica la classifica appena si apre la pagina
+        loadLeaderboard();
+    </script>
 </head>
 <body>
 
-    <div id="game-screen">
-        <h1>⚠️ SYSTEM ERROR ⚠️<br>Elimina i Bug per continuare!</h1>
-        <div id="counter">10</div>
+    <div id="score-hud">0</div>
+
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        
+        <div id="start-screen" class="ui-layer">
+            <div class="interactive">
+                <h1>🎓 Run Riccardo Run</h1>
+                <p>Salta per evitare i BUG 🐛 e prendi il Tocco!</p>
+                <p style="font-size:12px; color:#aaa;">Tocca lo schermo o premi Spazio per saltare</p>
+                <button onclick="startGame()">GIOCA ORA</button>
+                
+                <div id="leaderboard">
+                    <div style="text-align:center; color: #ff0000; font-weight:bold; margin-bottom: 5px; border-bottom:1px solid #333; padding-bottom:5px;">🏆 CLASSIFICA LIVE</div>
+                    <div id="leaderboard-list">Caricamento...</div>
+                </div>
+            </div>
         </div>
 
-    <div id="victory-screen">
-        <div class="card">
-            <h1 style="color: white; font-family: sans-serif;">🎉 SISTEMA PULITO! 🎉</h1>
-            <p style="color: #c9d1d9; font-family: sans-serif; line-height: 1.5;">
-                Grazie per avermi aiutato a risolvere gli ultimi bug.<br>
-                Ora il software è stabile!
-            </p>
-            <p style="color: #8b949e; font-size: 0.9rem; margin-top: 20px;">
-                Riccardo Giorgetti<br>Dottore in Informatica
-            </p>
-            <a href="https://www.linkedin.com/in/riccardo-giorgetti-2a3268315/" class="btn-download">📄 Scarica i Ringraziamenti</a>
+        <div id="game-over-screen" class="ui-layer" style="display: none;">
+            <div class="interactive">
+                <h1>GAME OVER</h1>
+                <p>Il tuo punteggio: <span id="final-score" style="color:#ff0000; font-weight:bold; font-size:1.5em;">0</span></p>
+                
+                <div id="input-container">
+                    <p>Inserisci il tuo nome per la classifica:</p>
+                    <input type="text" id="player-name" placeholder="NOME (max 10 lett.)" maxlength="10">
+                    <button onclick="submitScore()">SALVA E RIGIOCA</button>
+                </div>
+                <div id="saving-msg" style="display:none; color:gold; margin-top:10px;">Salvataggio in corso...</div>
+            </div>
         </div>
+        
+        <div id="mobile-controls" onmousedown="handleJump(event)" ontouchstart="handleJump(event)"></div>
     </div>
 
     <script>
-        const gameScreen = document.getElementById('game-screen');
-        const counterDisplay = document.getElementById('counter');
-        const victoryScreen = document.getElementById('victory-screen');
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
         
-        let bugsRemaining = 10;
+        // Adatta il canvas allo schermo
+        function resize() {
+            canvas.width = window.innerWidth > 600 ? 600 : window.innerWidth;
+            canvas.height = 300;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // Variabili
+        let gameRunning = false;
+        let score = 0;
+        let gameSpeed = 5;
+        let frame = 0;
+        let animationId;
         
-        // SETUP AUDIO (Opzionale, semplice beep)
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playSound() {
-            if(audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.type = 'square';
-            osc.frequency.value = 150; 
-            gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.1);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.1);
-        }
+        // Personaggio (Riccardo)
+        const dino = { x: 50, y: 200, w: 30, h: 30, dy: 0, jumpPower: -10, gravity: 0.6, grounded: false };
+        
+        // Ostacoli
+        let obstacles = [];
 
-        // Funzione per creare un bug
-        function spawnBug() {
-            if (bugsRemaining <= 0) return;
-
-            const bug = document.createElement('div');
-            bug.classList.add('bug');
-            bug.innerText = '🐛'; 
-            
-            // Posizione casuale (calcolata per restare nello schermo)
-            const x = Math.random() * (window.innerWidth - 80) + 20;
-            const y = Math.random() * (window.innerHeight - 200) + 100;
-            
-            bug.style.left = `${x}px`;
-            bug.style.top = `${y}px`;
-
-            // Interazione Click/Touch
-            bug.addEventListener('touchstart', smashBug);
-            bug.addEventListener('click', smashBug);
-
-            gameScreen.appendChild(bug);
-        }
-
-        function smashBug(e) {
-            e.preventDefault(); 
-            const bug = e.target;
-            
-            // Effetto visivo "Splat"
-            bug.innerText = '💥';
-            bug.style.animation = 'pop 0.2s forwards';
-            playSound();
-            
-            // Rimuovi bug dopo l'animazione
-            setTimeout(() => {
-                if(bug.parentNode) bug.remove();
-            }, 200);
-
-            // Logica gioco
-            bugsRemaining--;
-            counterDisplay.innerText = bugsRemaining;
-
-            if (bugsRemaining === 0) {
-                winGame();
-            } else {
-                spawnBug();
-                // Aumenta difficoltà: a volte ne fa uscire due
-                if(Math.random() > 0.5) spawnBug();
+        function handleJump(e) {
+            if(e) e.preventDefault(); // Evita scroll o zoom
+            if (!gameRunning) return;
+            if (dino.grounded) {
+                dino.dy = dino.jumpPower;
+                dino.grounded = false;
             }
         }
 
-        function winGame() {
-            setTimeout(() => {
-                gameScreen.style.display = 'none';
-                victoryScreen.style.display = 'flex';
-                launchConfetti();
-            }, 500);
+        // Tasto Spazio per PC
+        window.addEventListener('keydown', e => { if(e.code === 'Space') handleJump(e); });
+
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('game-over-screen').style.display = 'none';
+            document.getElementById('score-hud').innerText = '0';
+            
+            // Reset
+            dino.y = canvas.height - 50;
+            dino.dy = 0;
+            obstacles = [];
+            score = 0;
+            gameSpeed = 5;
+            frame = 0;
+            gameRunning = true;
+            loop();
         }
 
-        function launchConfetti() {
-            var duration = 3000;
-            var end = Date.now() + duration;
+        function loop() {
+            if (!gameRunning) return;
 
-            (function frame() {
-                confetti({
-                    particleCount: 5,
-                    angle: 60,
-                    spread: 55,
-                    origin: { x: 0 },
-                    colors: ['#ff0000', '#ffffff', '#00ff00']
-                });
-                confetti({
-                    particleCount: 5,
-                    angle: 120,
-                    spread: 55,
-                    origin: { x: 1 },
-                    colors: ['#ff0000', '#ffffff', '#00ff00']
-                });
+            animationId = requestAnimationFrame(loop);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                if (Date.now() < end) {
-                    requestAnimationFrame(frame);
+            // Fisica Dino
+            dino.dy += dino.gravity;
+            dino.y += dino.dy;
+            
+            // Pavimento
+            if (dino.y + dino.h > canvas.height - 20) {
+                dino.y = canvas.height - 20 - dino.h;
+                dino.dy = 0;
+                dino.grounded = true;
+            }
+
+            // Disegna Pavimento
+            ctx.fillStyle = '#444';
+            ctx.fillRect(0, canvas.height - 20, canvas.width, 20);
+
+            // Disegna Riccardo (Quadrato Rosso con Tocco)
+            ctx.fillStyle = '#ff0000'; 
+            ctx.fillRect(dino.x, dino.y, dino.w, dino.h);
+            // Occhi
+            ctx.fillStyle = 'white'; 
+            ctx.fillRect(dino.x+20, dino.y+5, 6, 6);
+            // Tocco Nero
+            ctx.fillStyle = 'black'; 
+            ctx.fillRect(dino.x-5, dino.y-10, 40, 10);
+
+            // Generazione Ostacoli
+            frame++;
+            if (frame % 100 === 0 || (gameSpeed > 8 && frame % 60 === 0 && Math.random() > 0.5)) { 
+                let type = Math.random();
+                // Bug (Basso) o Caffè (Alto) o Errore 404
+                let obsH = type > 0.5 ? 40 : 25; 
+                let obsY = canvas.height - 20 - obsH;
+                
+                obstacles.push({ x: canvas.width, y: obsY, w: 25, h: obsH, type: type > 0.5 ? '☕' : '🐛' });
+                
+                // Aumenta velocità
+                if(gameSpeed < 12) gameSpeed += 0.05;
+            }
+
+            for (let i = 0; i < obstacles.length; i++) {
+                let obs = obstacles[i];
+                obs.x -= gameSpeed;
+                
+                // Disegna Ostacolo (Emoji)
+                ctx.font = "24px Arial";
+                ctx.fillText(obs.type, obs.x, obs.y + 20);
+                
+                // Collisione semplice
+                if (dino.x < obs.x + obs.w - 5 && 
+                    dino.x + dino.w > obs.x + 5 &&
+                    dino.y < obs.y + obs.h - 5 && 
+                    dino.y + dino.h > obs.y + 5) {
+                    endGame();
                 }
-            }());
+
+                // Punti
+                if (obs.x + obs.w < 0) {
+                    obstacles.splice(i, 1);
+                    i--;
+                    score++;
+                    document.getElementById('score-hud').innerText = score;
+                }
+            }
         }
 
-        // Inizializza con 3 bug
-        for(let i=0; i<3; i++) setTimeout(spawnBug, i * 200);
+        function endGame() {
+            gameRunning = false;
+            cancelAnimationFrame(animationId);
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('game-over-screen').style.display = 'flex';
+        }
 
+        function submitScore() {
+            const nameInput = document.getElementById('player-name');
+            const name = nameInput.value.trim().toUpperCase();
+            
+            if(name === "") { 
+                alert("Scrivi un nome!"); 
+                return; 
+            }
+            if(score === 0) {
+                alert("Fai almeno 1 punto!");
+                return;
+            }
+
+            // Mostra caricamento
+            document.getElementById('input-container').style.display = 'none';
+            document.getElementById('saving-msg').style.display = 'block';
+
+            // Chiama la funzione di Firebase (definita nel modulo sopra)
+            if (window.saveScoreToDb) {
+                window.saveScoreToDb(name, score);
+            } else {
+                alert("Errore di connessione al database!");
+                location.reload();
+            }
+        }
     </script>
 </body>
 </html>
