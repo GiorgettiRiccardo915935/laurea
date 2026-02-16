@@ -5,48 +5,137 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Geometry Laurea</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Pusab&display=swap'); /* Font stile GD (simile) */
+        /* STILE GENERALE */
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            background-color: #111; 
+            font-family: 'Courier New', Courier, monospace; 
+            user-select: none; 
+            touch-action: none; /* Fondamentale per mobile */
+        }
         
-        body { margin: 0; overflow: hidden; background-color: #202020; font-family: 'Arial', sans-serif; user-select: none; touch-action: none; }
+        #game-container { 
+            position: relative; 
+            width: 100vw; 
+            height: 100vh; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            background: linear-gradient(180deg, #0d0d0d 0%, #1a1a1a 100%); 
+        }
         
-        #game-container { position: relative; width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(180deg, #001f3f 0%, #000000 100%); }
-        
-        canvas { box-shadow: 0 0 50px rgba(0, 255, 255, 0.2); border-top: 5px solid #00ff41; border-bottom: 5px solid #00ff41; }
+        canvas { 
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.2); 
+            border-top: 2px solid #00ff41; 
+            border-bottom: 2px solid #00ff41; 
+            background: #000;
+        }
 
         /* BARRA PROGRESSO */
-        #progress-container { position: absolute; top: 20px; width: 80%; height: 20px; background: rgba(255,255,255,0.1); border-radius: 10px; border: 2px solid white; z-index: 10; }
-        #progress-bar { width: 0%; height: 100%; background: #00ff41; border-radius: 8px; transition: width 0.1s linear; }
-        #percent-text { position: absolute; right: -50px; top: -5px; color: white; font-weight: bold; font-family: monospace; font-size: 20px; }
+        #progress-container { 
+            position: absolute; 
+            top: 20px; 
+            width: 80%; 
+            height: 15px; 
+            background: rgba(255,255,255,0.1); 
+            border-radius: 10px; 
+            border: 1px solid #555; 
+            z-index: 10; 
+        }
+        #progress-bar { 
+            width: 0%; 
+            height: 100%; 
+            background: #00ff41; 
+            border-radius: 8px; 
+            transition: width 0.1s linear; 
+            box-shadow: 0 0 10px #00ff41;
+        }
+        #percent-text { 
+            position: absolute; 
+            right: 0; 
+            top: 20px; 
+            color: #00ff41; 
+            font-weight: bold; 
+            font-size: 16px; 
+        }
 
-        /* UI */
-        .ui-layer { position: absolute; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 20; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); }
+        /* UI (Interfaccia) */
+        .ui-layer { 
+            position: absolute; 
+            width: 100%; 
+            height: 100%; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 20; 
+            background: rgba(0,0,0,0.85); 
+            backdrop-filter: blur(5px); 
+        }
         
-        h1 { color: #00ff41; font-size: 40px; text-transform: uppercase; margin-bottom: 10px; text-shadow: 0 0 10px #00ff41; text-align: center; }
-        p { color: white; margin-bottom: 20px; text-align: center; max-width: 90%; }
+        h1 { color: #00ff41; font-size: 32px; text-transform: uppercase; margin-bottom: 10px; text-align: center; text-shadow: 0 0 10px rgba(0,255,65,0.5); }
+        p { color: white; margin-bottom: 20px; text-align: center; max-width: 90%; font-size: 14px; line-height: 1.5; }
         
-        button { background: linear-gradient(45deg, #ff0000, #ff5500); border: none; padding: 15px 40px; color: white; font-size: 24px; font-weight: bold; border-radius: 50px; cursor: pointer; box-shadow: 0 10px 20px rgba(255, 0, 0, 0.4); transition: transform 0.1s; }
-        button:active { transform: scale(0.95); }
+        /* BOTTONI */
+        button { 
+            background: #00ff41; 
+            border: none; 
+            padding: 15px 40px; 
+            color: black; 
+            font-size: 20px; 
+            font-weight: bold; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            box-shadow: 0 5px 15px rgba(0, 255, 65, 0.3); 
+            transition: transform 0.1s; 
+            text-transform: uppercase;
+            font-family: 'Courier New', monospace;
+        }
+        button:active { transform: scale(0.95); background: #00cc33; }
 
         .hidden { display: none !important; }
 
-        /* CLASSIFICA */
-        #leaderboard-box { background: rgba(255,255,255,0.1); width: 80%; max-width: 400px; padding: 15px; border-radius: 10px; max-height: 200px; overflow-y: auto; text-align: left; }
-        .row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.2); color: #ddd; }
-        .row:first-child { color: gold; font-weight: bold; }
-        
-        input { padding: 15px; font-size: 20px; text-align: center; border-radius: 10px; border: none; margin-bottom: 20px; width: 80%; max-width: 300px; }
+        /* INPUT CAMPO TESTO */
+        input { 
+            padding: 15px; 
+            font-size: 18px; 
+            text-align: center; 
+            border-radius: 5px; 
+            border: 2px solid #333; 
+            background: #222;
+            color: white;
+            margin-bottom: 20px; 
+            width: 70%; 
+            font-family: 'Courier New', monospace;
+        }
 
-        /* SFONDO DINAMICO */
-        .bg-particles { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events: none; z-index: 0; opacity: 0.3; }
+        /* CLASSIFICA */
+        #leaderboard-box { 
+            background: rgba(255,255,255,0.05); 
+            width: 85%; 
+            max-width: 350px; 
+            padding: 15px; 
+            border-radius: 8px; 
+            max-height: 200px; 
+            overflow-y: auto; 
+            text-align: left; 
+            border: 1px solid #333;
+            margin-top: 15px;
+        }
+        .row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #333; color: #ccc; font-size: 14px; }
+        .row:first-child { color: #ffd700; font-weight: bold; } /* Oro */
+        .row:nth-child(2) { color: #c0c0c0; } /* Argento */
+        .row:nth-child(3) { color: #cd7f32; } /* Bronzo */
     </style>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
         import { getDatabase, ref, push, query, orderByChild, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
 
-        // --- INCOLLA QUI LA TUA CONFIGURAZIONE ---
+        // TUA CONFIGURAZIONE (Già inserita)
         const firebaseConfig = {
-          apiKey: "INCOLLA_LA_TUA_API_KEY",
+          apiKey: "AIzaSyD4jcNF-5pnZnaViy900SHbCf5-6XlmDts",
           authDomain: "laurea-4270d.firebaseapp.com",
           databaseURL: "https://laurea-4270d-default-rtdb.europe-west1.firebasedatabase.app",
           projectId: "laurea-4270d",
@@ -54,38 +143,49 @@
           messagingSenderId: "351839726503",
           appId: "1:351839726503:web:fcc110de03f49822bde482"
         };
-        // -----------------------------------------
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Salva punteggio (Percentuale completata o Tempo se 100%)
-        window.saveScoreToDb = function(name, percent) {
-            push(ref(db, 'geo_scores'), { name: name, score: percent, date: Date.now() });
+        // Funzione Globale per salvare
+        window.saveScoreToDb = function(name, score) {
+            push(ref(db, 'geo_scores'), { 
+                name: name, 
+                score: score, 
+                date: Date.now() 
+            }).then(() => {
+                alert("Punteggio salvato!");
+                location.reload();
+            }).catch((e) => alert("Errore: " + e));
         };
 
-        // Carica Classifica
+        // Funzione Globale per caricare classifica
         window.loadLeaderboard = function() {
-            const q = query(ref(db, 'geo_scores'), orderByChild('score'), limitToLast(10));
+            const q = query(ref(db, 'geo_scores'), orderByChild('score'), limitToLast(20));
             onValue(q, (snapshot) => {
                 const list = document.getElementById('lb-list');
                 list.innerHTML = "";
                 let data = [];
                 snapshot.forEach(c => data.push(c.val()));
-                data.sort((a,b) => b.score - a.score); // Dal più alto al più basso
                 
-                if(data.length === 0) list.innerHTML = "<div>Nessun punteggio</div>";
+                // Ordina dal più alto al più basso
+                data.sort((a,b) => b.score - a.score); 
+                
+                if(data.length === 0) list.innerHTML = "<div style='padding:10px; text-align:center'>Nessun punteggio</div>";
                 
                 data.forEach((entry, i) => {
                     const d = document.createElement('div');
                     d.className = 'row';
-                    // Se ha fatto 100, metti una corona
-                    let displayScore = entry.score >= 100 ? "👑 COMPLETATO" : entry.score + "%";
-                    d.innerHTML = `<span>${i+1}. ${entry.name.substring(0,10)}</span><span>${displayScore}</span>`;
+                    let label = entry.score >= 100 ? "👑 100%" : entry.score + "%";
+                    // Nome troncato a 10 caratteri per non rompere il layout
+                    let safeName = entry.name ? entry.name.substring(0, 12) : "Anonimo";
+                    d.innerHTML = `<span>${i+1}. ${safeName}</span><span>${label}</span>`;
                     list.appendChild(d);
                 });
             });
         };
+        
+        // Avvia caricamento classifica
         loadLeaderboard();
     </script>
 </head>
@@ -101,65 +201,88 @@
 
         <div id="start-screen" class="ui-layer">
             <h1>Geometry Laurea</h1>
-            <p>Tocca per saltare. Tieni premuto per salti consecutivi.<br>Arriva al 100% per leggere il messaggio finale.</p>
-            <button onclick="startGame()">START LEVEL 1</button>
-            <div id="leaderboard-box" style="margin-top: 20px;">
-                <div style="text-align:center; color:#00ff41; border-bottom:1px solid #555; margin-bottom:10px;">TOP PLAYERS</div>
-                <div id="lb-list">Loading...</div>
+            <p>Tocca lo schermo per saltare.<br>Evita i Bug e arriva al 100%!</p>
+            <button id="btn-start" onclick="startGame()">INIZIA LIVELLO</button>
+            
+            <div id="leaderboard-box">
+                <div style="text-align:center; color:#00ff41; border-bottom:1px solid #333; margin-bottom:5px; padding-bottom:5px; font-weight:bold;">🏆 CLASSIFICA</div>
+                <div id="lb-list">Caricamento...</div>
             </div>
         </div>
 
         <div id="win-screen" class="ui-layer hidden">
-            <h1>LIVELLO COMPLETATO!</h1>
-            <p style="font-size: 18px; line-height: 1.6;">
-                "L'informatica non riguarda i computer più di quanto l'astronomia riguardi i telescopi."<br><br>
-                Grazie per aver condiviso questo traguardo con me.<br>
-                <i>- Riccardo</i>
+            <h1 style="color:gold">COMPLETATO! 🎉</h1>
+            <p style="font-size: 16px; font-style: italic;">
+                "L'informatica non riguarda i computer più di quanto l'astronomia riguardi i telescopi."
+                <br><br>
+                Grazie per essere qui oggi.
+                <br>- Riccardo
             </p>
-            <input type="text" id="winner-name" placeholder="Il tuo nome" maxlength="12">
-            <button onclick="submitWin()">ENTRA NELLA STORIA</button>
+            <input type="text" id="winner-name" placeholder="IL TUO NOME" maxlength="12">
+            <button onclick="submitWin()">SALVA RECORD</button>
         </div>
 
         <div id="lose-screen" class="ui-layer hidden">
-            <h1 style="color:red">CRASH!</h1>
-            <p>Sei arrivato al <span id="final-percent" style="font-weight:bold; color:white">0%</span></p>
+            <h1 style="color:#ff3333">CRASH! 💀</h1>
+            <p>Progresso: <span id="final-percent" style="font-weight:bold; color:white; font-size:1.5em">0%</span></p>
             <button onclick="resetGame()">RIPROVA</button>
-            <br>
-            <p style="font-size:12px; margin-top:10px; opacity:0.7;">Non arrenderti, è solo un bug.</p>
+            
+            <div style="margin-top: 20px; font-size: 12px;">
+                <p style="margin-bottom:5px">Vuoi salvare questo punteggio?</p>
+                <input type="text" id="loser-name" placeholder="NOME" maxlength="10" style="padding:5px; width:100px; font-size:14px; margin-bottom:5px;">
+                <button onclick="submitLoss()" style="padding:5px 10px; font-size:12px; background:#555; color:white;">SALVA</button>
+            </div>
         </div>
     </div>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+        
+        // Immagine Faccia
         const imgFace = new Image();
-        imgFace.src = 'face.png'; // L'immagine che carichi su GitHub
+        imgFace.src = 'face.png'; // Deve essere caricata su GitHub
 
         // SETUP CANVAS
         function resize() {
+            // Su mobile usa quasi tutto lo schermo, su PC max 800px
             canvas.width = Math.min(window.innerWidth, 800);
             canvas.height = Math.min(window.innerHeight, 400);
         }
         window.addEventListener('resize', resize);
         resize();
 
-        // GAME CONFIG
-        const GRAVITY = 0.6;
-        const JUMP_FORCE = -10.5; // Salto secco
-        const SPEED = 6;
-        const LEVEL_LENGTH = 3000; // Lunghezza del livello in pixel
+        // CONFIGURAZIONE GIOCO
+        const GRAVITY = 0.65;
+        const JUMP_FORCE = -11; 
+        const SPEED = 6.5; 
+        const LEVEL_LENGTH = 3500; // Pixel totali del livello
 
         let state = {
             running: false,
-            frame: 0,
             distance: 0,
-            player: { x: 100, y: 200, dy: 0, size: 40, rotation: 0, grounded: false },
-            obstacles: [],
-            particles: [] // Per effetto esplosione
+            player: { x: 50, y: 200, dy: 0, size: 36, rotation: 0, grounded: false },
+            obstacles: []
         };
 
-        // INPUT
+        // GESTIONE INPUT (CORRETTA PER MOBILE)
         let inputActive = false;
+
+        function handleInput(e) {
+            // Se l'utente tocca un bottone o input, lascia fare al browser
+            if(e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') {
+                return;
+            }
+            
+            // Altrimenti blocca scroll e salta
+            if(e.type === 'touchstart') {
+                e.preventDefault(); 
+            }
+            
+            inputActive = true;
+            jump();
+        }
+
         function jump() {
             if(!state.running) return;
             if(state.player.grounded) {
@@ -167,14 +290,15 @@
                 state.player.grounded = false;
             }
         }
-        
-        window.addEventListener('mousedown', () => { inputActive = true; jump(); });
+
+        window.addEventListener('mousedown', handleInput);
+        window.addEventListener('touchstart', handleInput, {passive: false});
         window.addEventListener('mouseup', () => { inputActive = false; });
-        window.addEventListener('touchstart', (e) => { e.preventDefault(); inputActive = true; jump(); }, {passive: false});
         window.addEventListener('touchend', () => { inputActive = false; });
         window.addEventListener('keydown', (e) => { if(e.code==='Space') { inputActive = true; jump(); } });
         window.addEventListener('keyup', () => { inputActive = false; });
 
+        // LOGICA DI GIOCO
         function startGame() {
             document.getElementById('start-screen').classList.add('hidden');
             resetVariables();
@@ -188,28 +312,22 @@
             state.player.rotation = 0;
             state.distance = 0;
             state.obstacles = [];
-            state.frame = 0;
-            // Genera il livello (Ostacoli procedurali ma sempre uguali per tutti)
             generateLevel();
         }
 
         function generateLevel() {
-            // Genera ostacoli ogni X pixel
-            for(let i=500; i<LEVEL_LENGTH; i+= 400) { // Distanza tra ostacoli
-                // Randomizza leggermente la posizione ma mantieni ritmo
-                let noise = Math.random() * 100;
-                // Ostacolo triangolare (Spike)
-                state.obstacles.push({ x: i + noise, type: 'spike' });
-                
-                // A volte aggiungi un blocco da saltare sopra
-                if(Math.random() > 0.7) {
-                    state.obstacles.push({ x: i + noise + 200, type: 'block' });
-                }
+            // Crea ostacoli
+            for(let i=600; i<LEVEL_LENGTH; i+= 450) { 
+                let type = Math.random() > 0.6 ? 'block' : 'spike';
+                // Aggiungi un po' di casualità alla posizione X
+                let jitter = Math.random() * 50;
+                state.obstacles.push({ x: i + jitter, type: type });
             }
         }
 
         function resetGame() {
             document.getElementById('lose-screen').classList.add('hidden');
+            document.getElementById('win-screen').classList.add('hidden');
             resetVariables();
             state.running = true;
             loop();
@@ -220,108 +338,110 @@
             requestAnimationFrame(loop);
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // 1. UPDATE PLAYER
+            // 1. FISICA PLAYER
             state.player.dy += GRAVITY;
             state.player.y += state.player.dy;
 
-            // Pavimento
             let groundY = canvas.height - 50;
+            
+            // Collisione col pavimento
             if(state.player.y + state.player.size > groundY) {
                 state.player.y = groundY - state.player.size;
                 state.player.dy = 0;
                 state.player.grounded = true;
-                // Arrotonda rotazione a terra (stile Geometry Dash)
+                // Arrotonda rotazione
                 let nearest90 = Math.round(state.player.rotation / (Math.PI/2)) * (Math.PI/2);
-                state.player.rotation = nearest90;
+                state.player.rotation += (nearest90 - state.player.rotation) * 0.2;
             } else {
-                // Ruota mentre salta
-                state.player.rotation += 0.15; 
+                state.player.rotation += 0.12; // Ruota in aria
             }
 
-            // Salto continuo se tieni premuto (opzionale, Geometry Dash di solito è tap, ma qui aiuta)
+            // Salto continuo se tieni premuto (opzionale)
             if(inputActive && state.player.grounded) {
                 jump();
             }
 
-            // 2. UPDATE PROGRESS
+            // 2. PROGRESSO
             state.distance += SPEED;
             let percent = Math.min(100, Math.floor((state.distance / LEVEL_LENGTH) * 100));
             document.getElementById('progress-bar').style.width = percent + "%";
             document.getElementById('percent-text').innerText = percent + "%";
 
-            // WIN CONDITION
             if(state.distance >= LEVEL_LENGTH) {
                 winGame();
                 return;
             }
 
-            // 3. DRAW SCENE
-            // Sfondo griglia stile GD
-            ctx.fillStyle = '#111';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.strokeStyle = '#333';
+            // 3. DISEGNO AMBIENTE
+            // Griglia sfondo
+            ctx.strokeStyle = '#222';
             ctx.lineWidth = 2;
             ctx.beginPath();
-            for(let x = -(state.distance % 50); x < canvas.width; x+=50) { ctx.moveTo(x,0); ctx.lineTo(x,canvas.height); }
-            for(let y = 0; y < canvas.height; y+=50) { ctx.moveTo(0,y); ctx.lineTo(canvas.width,y); }
+            let gridOffset = -(state.distance % 50);
+            for(let x = gridOffset; x < canvas.width; x+=50) { ctx.moveTo(x,0); ctx.lineTo(x,canvas.height); }
             ctx.stroke();
 
-            // Pavimento (Linea verde neon)
+            // Pavimento
             ctx.fillStyle = '#00ff41';
-            ctx.fillRect(0, groundY, canvas.width, 5);
+            ctx.fillRect(0, groundY, canvas.width, 4);
 
-            // PLAYER (La tua faccia che ruota)
+            // 4. DISEGNO PLAYER
             ctx.save();
             ctx.translate(state.player.x + state.player.size/2, state.player.y + state.player.size/2);
             ctx.rotate(state.player.rotation);
-            ctx.drawImage(imgFace, -state.player.size/2, -state.player.size/2, state.player.size, state.player.size);
-            // Bordo neon attorno alla faccia
-            ctx.strokeStyle = '#ffff00';
-            ctx.lineWidth = 3;
+            
+            // Disegna immagine se caricata, altrimenti quadrato rosso
+            if(imgFace.complete && imgFace.naturalHeight !== 0) {
+                ctx.drawImage(imgFace, -state.player.size/2, -state.player.size/2, state.player.size, state.player.size);
+            } else {
+                ctx.fillStyle = 'red';
+                ctx.fillRect(-state.player.size/2, -state.player.size/2, state.player.size, state.player.size);
+            }
+            
+            // Bordo player
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 2;
             ctx.strokeRect(-state.player.size/2, -state.player.size/2, state.player.size, state.player.size);
             ctx.restore();
 
-            // 4. OSTACOLI
-            ctx.fillStyle = '#ff0040'; // Colore spine
-            
+            // 5. OSTACOLI & COLLISIONI
             for(let obs of state.obstacles) {
-                let screenX = obs.x - state.distance + 150; // +150 offset iniziale
+                let screenX = obs.x - state.distance + 100; // +100 offset iniziale
                 
-                if(screenX > -50 && screenX < canvas.width + 50) {
+                if(screenX > -100 && screenX < canvas.width + 100) {
+                    
                     if(obs.type === 'spike') {
-                        // Disegna triangolo
+                        // Disegna Triangolo
+                        ctx.fillStyle = '#ff3333';
                         ctx.beginPath();
                         ctx.moveTo(screenX, groundY);
-                        ctx.lineTo(screenX + 20, groundY - 40); // Punta
+                        ctx.lineTo(screenX + 20, groundY - 40);
                         ctx.lineTo(screenX + 40, groundY);
                         ctx.fill();
                         
-                        // COLLISIONE (Hitbox semplice)
-                        if(checkRectCollision(state.player.x, state.player.y, state.player.size, state.player.size, screenX + 10, groundY - 30, 20, 30)) {
+                        // Hitbox (semplificata rettangolare interna)
+                        if(checkCollision(state.player.x + 5, state.player.y + 5, state.player.size - 10, state.player.size - 10, screenX + 10, groundY - 30, 20, 30)) {
                             gameOver(percent);
                         }
-                    } else if (obs.type === 'block') {
-                         ctx.fillStyle = '#00ffff';
-                         ctx.fillRect(screenX, groundY - 40, 40, 40);
-                         // Collisione blocco
-                         if(checkRectCollision(state.player.x, state.player.y, state.player.size, state.player.size, screenX, groundY - 40, 40, 40)) {
+                    } else {
+                        // Disegna Blocco
+                        ctx.fillStyle = '#00ccff';
+                        ctx.fillRect(screenX, groundY - 40, 40, 40);
+                        
+                        if(checkCollision(state.player.x, state.player.y, state.player.size, state.player.size, screenX, groundY - 40, 40, 40)) {
                             gameOver(percent);
                         }
-                        ctx.fillStyle = '#ff0040'; // reset colore
                     }
                 }
             }
         }
 
-        function checkRectCollision(x1, y1, w1, h1, x2, y2, w2, h2) {
+        function checkCollision(x1, y1, w1, h1, x2, y2, w2, h2) {
             return (x1 < x2 + w2 && x1 + w1 > x2 && y1 < y2 + h2 && y1 + h1 > y2);
         }
 
         function gameOver(percent) {
             state.running = false;
-            // Salva solo se è un buon punteggio (opzionale, qui salviamo sempre per la classifica)
-            // Se vuoi salvare anche chi perde: window.saveScoreToDb("Anonimo", percent);
-            
             document.getElementById('final-percent').innerText = percent + "%";
             document.getElementById('lose-screen').classList.remove('hidden');
         }
@@ -331,14 +451,18 @@
             document.getElementById('win-screen').classList.remove('hidden');
         }
 
+        // SALVATAGGIO PUNTEGGI
         window.submitWin = function() {
             const name = document.getElementById('winner-name').value.trim();
-            if(!name) return alert("Inserisci il nome!");
-            
-            // Salva 100% nel database
+            if(!name) return alert("Inserisci un nome!");
             window.saveScoreToDb(name, 100);
-            alert("Punteggio salvato! Sei un mito.");
-            location.reload();
+        }
+
+        window.submitLoss = function() {
+            const name = document.getElementById('loser-name').value.trim();
+            const percent = document.getElementById('final-percent').innerText.replace('%', '');
+            if(!name) return alert("Inserisci un nome!");
+            window.saveScoreToDb(name, parseInt(percent));
         }
 
     </script>
